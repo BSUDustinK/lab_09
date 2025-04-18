@@ -453,7 +453,7 @@ int main(void)
  8000538:	4b5c      	ldr	r3, [pc, #368]	@ (80006ac <main+0x1f4>)
  800053a:	6cdb      	ldr	r3, [r3, #76]	@ 0x4c
  800053c:	61fb      	str	r3, [r7, #28]
-		  		  	volts = ((3*analog_value)/4095);
+		  		  	volts = ((3*analog_value)/4095);  // 1s place
  800053e:	69fb      	ldr	r3, [r7, #28]
  8000540:	4a5c      	ldr	r2, [pc, #368]	@ (80006b4 <main+0x1fc>)
  8000542:	fb82 1203 	smull	r1, r2, r2, r3
@@ -462,14 +462,14 @@ int main(void)
  800054a:	17db      	asrs	r3, r3, #31
  800054c:	1ad3      	subs	r3, r2, r3
  800054e:	61bb      	str	r3, [r7, #24]
-		  		  	Seven_Segment_Digit(7,volts,0);
+		  		  	Seven_Segment_Digit(7,volts,0); // Digit 7
  8000550:	2200      	movs	r2, #0
  8000552:	69b9      	ldr	r1, [r7, #24]
  8000554:	2007      	movs	r0, #7
  8000556:	f000 fa5b 	bl	8000a10 <Seven_Segment_Digit>
 
 		  		  	/**** DISPLAY VOLTS 1/10TH'S DIGIT ON DISPLAY 6 ****/
-		  		  	volts_tenths = (30*analog_value/4095)%10;
+		  		  	volts_tenths = (30*analog_value/4095)%10; // 1/10s place 
  800055a:	69fa      	ldr	r2, [r7, #28]
  800055c:	4613      	mov	r3, r2
  800055e:	011b      	lsls	r3, r3, #4
@@ -492,7 +492,7 @@ int main(void)
  8000584:	005b      	lsls	r3, r3, #1
  8000586:	1ad3      	subs	r3, r2, r3
  8000588:	617b      	str	r3, [r7, #20]
-		  		  	Seven_Segment_Digit(6,volts_tenths,0);
+		  		  	Seven_Segment_Digit(6,volts_tenths,0);  // Digit 6
  800058a:	2200      	movs	r2, #0
  800058c:	6979      	ldr	r1, [r7, #20]
  800058e:	2006      	movs	r0, #6
@@ -520,7 +520,7 @@ int main(void)
  80005be:	005b      	lsls	r3, r3, #1
  80005c0:	1ad3      	subs	r3, r2, r3
  80005c2:	613b      	str	r3, [r7, #16]
-		  		    Seven_Segment_Digit(5,volts_hundredths,0); //Digit 5
+		  		    Seven_Segment_Digit(5,volts_hundredths,0); // Digit 5
  80005c4:	2200      	movs	r2, #0
  80005c6:	6939      	ldr	r1, [r7, #16]
  80005c8:	2005      	movs	r0, #5
@@ -552,7 +552,7 @@ int main(void)
  80005f8:	005b      	lsls	r3, r3, #1
  80005fa:	1ad3      	subs	r3, r2, r3
  80005fc:	60fb      	str	r3, [r7, #12]
-		  		  	Seven_Segment_Digit(3,raw_1000,0); //Digit 3
+		  		  	Seven_Segment_Digit(3,raw_1000,0); // Digit 3
  80005fe:	2200      	movs	r2, #0
  8000600:	68f9      	ldr	r1, [r7, #12]
  8000602:	2003      	movs	r0, #3
@@ -560,7 +560,7 @@ int main(void)
 
 
 		  		  	/**** DISPLAY 100THS PLACE OF RAW DECIMAL ON DISPLAY 2 ****/
-		  		  	raw_100 = (analog_value/100)%10;
+		  		  	raw_100 = (analog_value/100)%10; // 1/100th's place
  8000608:	69fb      	ldr	r3, [r7, #28]
  800060a:	4a2e      	ldr	r2, [pc, #184]	@ (80006c4 <main+0x20c>)
  800060c:	fb82 1203 	smull	r1, r2, r2, r3
@@ -578,14 +578,14 @@ int main(void)
  8000628:	005b      	lsls	r3, r3, #1
  800062a:	1ad3      	subs	r3, r2, r3
  800062c:	60bb      	str	r3, [r7, #8]
-		  		  	Seven_Segment_Digit(2,raw_100,0);
+		  		  	Seven_Segment_Digit(2,raw_100,0); // Digit 2
  800062e:	2200      	movs	r2, #0
  8000630:	68b9      	ldr	r1, [r7, #8]
  8000632:	2002      	movs	r0, #2
  8000634:	f000 f9ec 	bl	8000a10 <Seven_Segment_Digit>
 
 		  		  	/**** DISPLAY 10THS PLACE OF RAW DECIMAL ON DISPLAY 1 ****/
-		  		  	raw_10 = (analog_value/10)%10;
+		  		  	raw_10 = (analog_value/10)%10;  // 1/10ths
  8000638:	69fb      	ldr	r3, [r7, #28]
  800063a:	4a20      	ldr	r2, [pc, #128]	@ (80006bc <main+0x204>)
  800063c:	fb82 1203 	smull	r1, r2, r2, r3
@@ -603,7 +603,7 @@ int main(void)
  8000658:	005b      	lsls	r3, r3, #1
  800065a:	1ad3      	subs	r3, r2, r3
  800065c:	607b      	str	r3, [r7, #4]
-		  		  	Seven_Segment_Digit(1,raw_10,0);
+		  		  	Seven_Segment_Digit(1,raw_10,0); // Digit 1
  800065e:	2200      	movs	r2, #0
  8000660:	6879      	ldr	r1, [r7, #4]
  8000662:	2001      	movs	r0, #1
@@ -611,7 +611,7 @@ int main(void)
 
 
 		  		  	/**** DISPLAY 1'S PLACE OF RAW DECIMAL ON DISPLAY 0 ****/
-		  		  	raw_1 = analog_value%10;
+		  		  	raw_1 = analog_value%10;  // 1s
  8000668:	69fa      	ldr	r2, [r7, #28]
  800066a:	4b14      	ldr	r3, [pc, #80]	@ (80006bc <main+0x204>)
  800066c:	fb83 1302 	smull	r1, r3, r3, r2
@@ -624,7 +624,7 @@ int main(void)
  800067c:	005b      	lsls	r3, r3, #1
  800067e:	1ad3      	subs	r3, r2, r3
  8000680:	603b      	str	r3, [r7, #0]
-		  		  	Seven_Segment_Digit(0,raw_1,0);
+		  		  	Seven_Segment_Digit(0,raw_1,0); // Digit 0
  8000682:	2200      	movs	r2, #0
  8000684:	6839      	ldr	r1, [r7, #0]
  8000686:	2000      	movs	r0, #0

@@ -38,34 +38,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := lab_09
+BUILD_ARTIFACT_NAME := ThermalResistor
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-lab_09.elf \
+ThermalResistor.elf \
 
 MAP_FILES += \
-lab_09.map \
+ThermalResistor.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-lab_09.list \
+ThermalResistor.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: lab_09.elf secondary-outputs
+main-build: ThermalResistor.elf secondary-outputs
 
 # Tool invocations
-lab_09.elf lab_09.map: $(OBJS) $(USER_OBJS) C:\Users\godst\STM32CubeIDE\workspace_1.17.0\lab_09\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "lab_09.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\godst\STM32CubeIDE\workspace_1.17.0\lab_09\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="lab_09.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+ThermalResistor.elf ThermalResistor.map: $(OBJS) $(USER_OBJS) C:\Users\godst\STM32CubeIDE\workspace_1.17.0\ThermalResistor\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "ThermalResistor.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\godst\STM32CubeIDE\workspace_1.17.0\ThermalResistor\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ThermalResistor.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -74,14 +74,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-lab_09.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "lab_09.list"
+ThermalResistor.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "ThermalResistor.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout lab_09.elf lab_09.list lab_09.map
+	-$(RM) ThermalResistor.elf ThermalResistor.list ThermalResistor.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)

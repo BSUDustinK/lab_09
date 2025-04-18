@@ -54,6 +54,24 @@ TIM_HandleTypeDef htim7;
 
 /* USER CODE BEGIN PV */
 int DelayValue = 50;
+
+static int LookUpTemp[140] = {
+	-40,-39,-38,-37,-36,-35,-34,-33,-32,-31,
+	-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,
+	-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,
+	-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,
+	0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
+	20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,
+	40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59
+	,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79
+	,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,
+
+};
+static int LookUpResistor[140] = {431000,401700,374500,349400,326100,304500,284500,265900,248600,232500,217600,203800,190900,178900,167700,157300,147600,138500,130100,122200,114800,108000,101500,
+95530,89910,84660,79740,75140,70830,66780,63000,59450,56110,52990,50050,47300,44710,42280,39990,37840,35820,33910,32120,30430,28840,27340,25920,24590,23330,22140,21020,19970,18970,18020,17130,16290,15490,14740,14030,13350,12720,12110,11540,11000,10490,10000,
+9539,9102,8688,8294,7921,7566,7229,6909,6605,6315,6040,5779,5530,5293,5067,4852,4647,4452,4267,4090,3921,3760,3606,3459,3319,3186,3058,2937,2820,2709,2603,2501,2404,2311,2222,2137,2056,1978,1903,1832,1764,1698,1636,1576,1518,1463,1410,1359,1311,1264,1219,1176,1135,1095,1057,1020,
+985.2,951.3,918.7,887.3,857.1,828,799.9,772.9,746.8,721.8,697.7,674.5,652.2,630.7,610.1,590.3,571.2,552.9,
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -100,7 +118,7 @@ int main(void)
   GPIOD->MODER = 0x55555555; // set all Port D pins to outputs
 
   // Port A mode register - makes A0 to A3 analog pins
-  GPIOA->MODER = 0x000000ff;
+  GPIOA->MODER = 0x00000303;
 
   GPIOE->MODER |= 0x55555555; // Port E mode register - make E8 to E15 outputs
 
@@ -122,65 +140,81 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int analog_value, volts, volts_tenths, volts_hundredths, raw_1000, raw_100, raw_10, raw_1;
-
-  Seven_Segment(0x15EEADC1 ); //Message for showing that the initial project compiles and runs
+  int analog_value, volts, volts_tenths, volts_hundredths, raw_1000, raw_100, raw_10, raw_1, resistorLvl, tempRead, luxRead;
+  int i = 0;
+  //Seven_Segment(0x15EEADC1 ); //Message for showing that the initial project compiles and runs
   HAL_Delay(2000);
   while (1)
   {
-	  /************************************************
-	   *  Part 1 Display Light Sensor Volts on 7seg ***
-	   ************************************************/
 
-		  ADC1->SQR3 = 1; // select ADC channel 0, change to ADC channel 1 for potentiometer
+	  	  //Selects which sensor to read from, 0 for the light sensor 4 for the thermistor
+		  ADC1->SQR3 = (i == 0? 0: 4);
+
 		  HAL_Delay(1);
+
 		  ADC1->CR2 |= 1<<30; // Start a conversion on ADC1 by forcing bit 30 in CR2 to 1 while keeping other bits unchanged
 
+		  if(ADC1->SR & 1<<1){
 
-		  HAL_Delay(1);
-		  if (ADC1->SR & 1<<1) // check for conversion completed
-		  	  	  {
-			  	  	/**** DISPLAY VOLTS 1'S DIGIT ON DISPLAY 7 ****/
-			  	  	analog_value = ADC1->DR;// & 0x0FF0;
-		  		  	volts = ((3*analog_value)/4095);  // 1s place
-		  		  	Seven_Segment_Digit(7,volts,0); // Digit 7
+			  //reads the value of the Analog Converter and preserves the read out up to 10^-3
+		  	analog_value = (ADC1->DR) * 100;
+		  	i =(i+1)%2;
 
-		  		  	/**** DISPLAY VOLTS 1/10TH'S DIGIT ON DISPLAY 6 ****/
-		  		  	volts_tenths = (30*analog_value/4095)%10; // 1/10s place 
-		  		  	Seven_Segment_Digit(6,volts_tenths,0);  // Digit 6
+		  	switch(i){
 
-		  		  	/**** DISPLAY VOLTS 1/100TH'S DIGIT ON DISPLAY 5 ****/
-		  		    volts_hundredths = (300*analog_value/4095)%10; // 1/100TH'S PLACE
-		  		    Seven_Segment_Digit(5,volts_hundredths,0); // Digit 5
+		  		// Handles the reading and display of the Light sensor
+	  	  	case 0:		//This is where we read the value of the LIGHT SENSOR
+	  	  		volts = 3*(analog_value/4095); //converts to range 000-300
+	  	  		luxRead = (volts * 128)/10; //Converts to range of 000-3840
 
-		  		  	/**** SET DISPLAY 4 TO ZERO ****/
-		  		  	Seven_Segment_Digit(4,0,0);
+	  	  		/**** DISPLAY 1000THS PLACE OF RAW DECIMAL ON DISPLAY 3 ****/
+	  	  		raw_1000 = (luxRead/1000)%10; // 1/1000TH'S PLACE
+	  	  		Seven_Segment_Digit(3,raw_1000,0); // Digit 3
 
-		  		  	/**** DISPLAY 1000THS PLACE OF RAW DECIMAL ON DISPLAY 3 ****/
-		  		  	raw_1000 = (analog_value/1000)%10; // 1/1000TH'S PLACE
-		  		  	Seven_Segment_Digit(3,raw_1000,0); // Digit 3
+	  	  		/**** DISPLAY 100THS PLACE OF RAW DECIMAL ON DISPLAY 2 ****/
+	  	  		raw_100 = (luxRead/100)%10; // 1/100th's place
+	  	  		Seven_Segment_Digit(2,raw_100,0); // Digit 2
 
+	  	  		/**** DISPLAY 10THS PLACE OF RAW DECIMAL ON DISPLAY 1 ****/
+	  	  		raw_10 = (luxRead/10)%10;  // 1/10ths
+	  	  		Seven_Segment_Digit(1,raw_10,1); // Digit 1
 
-		  		  	/**** DISPLAY 100THS PLACE OF RAW DECIMAL ON DISPLAY 2 ****/
-		  		  	raw_100 = (analog_value/100)%10; // 1/100th's place
-		  		  	Seven_Segment_Digit(2,raw_100,0); // Digit 2
+	  	  		/**** DISPLAY 1'S PLACE OF RAW DECIMAL ON DISPLAY 0 ****/
+	  	  		raw_1 = luxRead%10;  // 1s
+	  	  		Seven_Segment_Digit(0,raw_1,0); // Digit 0
 
-		  		  	/**** DISPLAY 10THS PLACE OF RAW DECIMAL ON DISPLAY 1 ****/
-		  		  	raw_10 = (analog_value/10)%10;  // 1/10ths
-		  		  	Seven_Segment_Digit(1,raw_10,0); // Digit 1
+	  	  		break;
 
+	  		case 1:		//This is where we read the value of the thermal resistor
 
-		  		  	/**** DISPLAY 1'S PLACE OF RAW DECIMAL ON DISPLAY 0 ****/
-		  		  	raw_1 = analog_value%10;  // 1s
-		  		  	Seven_Segment_Digit(0,raw_1,0); // Digit 0
+	  			//Find value of resistor using the divider circuit formula reversed.
+	  			volts = ((3*analog_value)/4095);  //Converts  to range 000-300 mV
+	  			resistorLvl = (3000000/volts) - 10000; //we use 3,000,000 to accomadate multiplying voltage by 100. They factor out in the fraction but preserve the precision we want.
+	  			//TODO Finish implementation with a look up table
+	  			tempRead = Linear_Interpolation(resistorLvl);
 
-		  		  	/**** DISPLAY BINARY VALUE OF SAMPLE ON LEDS ****/
-		  		  	GPIOD->ODR = analog_value;
+	  			/**** DISPLAY temp 10'S DIGIT ON DISPLAY 7 ****/
+	  			if(tempRead < 0) {
+	  				Seven_Segment_Digit(7,44,0); // negative
+	  			} else {
+	  				Seven_Segment_Digit(7,((tempRead/100)%10),0); // Digit 7
+	  			}
+            
+	  			/**** DISPLAY temp 1'S DIGIT ON DISPLAY 6 ****/
+	  			//volts_tenths = (tempRead/10)%10; // 1/10s place
+	  			Seven_Segment_Digit(6,(tempRead/10)%10,1);  // Digit 6
 
-		  		  	HAL_Delay(100);
-		  	  	  }
+	  			/**** DISPLAY temp 1/10TH'S DIGIT ON DISPLAY 5 ****/
+	  			//volts_hundredths = tempRead%10; // 1/100TH'S PLACE
+	  			Seven_Segment_Digit(5,tempRead%10,0); // Digit 5
 
-
+	  			//Displays C on Display 4
+	  	  	  	Seven_Segment_Digit(4,0x0C,0);
+	  			break;
+	  		}
+	  		HAL_Delay(100);
+	  	}
+	HAL_Delay(1);
   }
 
 }
@@ -228,6 +262,38 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+ *@brief Returns an approximate value for temperature that is calculated by finding what two values on the table it is between and finds the slope of the line created between the two points.
+ *@param int  The value of the resistance created by the thermistor
+ *@retval int the temperature in C multiplied by 10 to preserve the tenths place
+ *
+ */
+int Linear_Interpolation(int resistanceReadout){
+	int index = 0;
+	char foundValue = 0;
+
+	/*find index of the value less than the resistance read out, we choose this because the resistance on the table decends as the index increases.
+	 * Once we have found the index we can leave the loop.
+	 * */
+	while((foundValue == 0) && (index < 139)){
+		if(LookUpResistor[index] <= resistanceReadout){
+			foundValue = 1;
+		} else {
+			index++;
+		}
+	}
+  //This if statement ensures we never try to find the element at array[0 - 1]
+	if(index == 0){
+		return -40; //-40C is the lower limit of the thermistor. any value below this can not be measured. 
+	} else {
+
+    //This is the linear interpolation of the end points for the line found in the while loop. This gives us the matching temperature to the resistance
+		int Y_o = LookUpTemp[index-1];
+		int Y_1 = LookUpTemp[index];
+		return 10 * ( Y_o * (LookUpResistor[index] - resistanceReadout) + Y_1 * (resistanceReadout - LookUpResistor[index-1]) ) / ( LookUpResistor[index] - LookUpResistor[index-1] );
+	}
 }
 
 
